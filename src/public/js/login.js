@@ -19,10 +19,12 @@ form.addEventListener('submit', e => {
                 .then(json => {
                     console.log("Cookies generadas:");
                     console.log(document.cookie);
-
-
                     alert("Login realizado con exito!!")
-                    window.location.replace('/users');
+                    if(json.role === 'admin'){
+                        window.location.replace('/users/admin')
+                    } else{
+                        window.location.replace('/users')
+                    }
                 });
         } else if (result.status === 401) {
             console.log(result);

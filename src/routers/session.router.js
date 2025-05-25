@@ -62,7 +62,11 @@ router.post('/login', async (req, res) =>{
             httpOnly: true
         })
 
-        res.send({ status: "Success", msg: `El token ha sido generado con exito: ${access_token}` })
+        res.send({ 
+            status: "Success", 
+            msg: `El token ha sido generado con exito: ${access_token}`,
+            role: user.role 
+        })
 
     } catch (error) {
         res.status(400).send({ error: error.message })
