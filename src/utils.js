@@ -24,7 +24,7 @@ export const PRIVATE_KEY = 'coderSecret'
 
 // Funcion para generar el token
 export const generateToken = user => {
-    return jwt.sign({ user }), PRIVATE_KEY, { expiresIn: '180s' } // por efectos de prueba lo dejare en 3 minutos
+    return jwt.sign({ user }, PRIVATE_KEY, { expiresIn: '180s' }) // por efectos de prueba lo dejare en 3 minutos
 }
 
 // Middleware para autenticacion en las rutas

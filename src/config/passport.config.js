@@ -15,13 +15,13 @@ const initializePassport = () => {
     //              REGISTER
     // ========================================
 
-    passport.use('register'), new localStrategy(
+    passport.use('register', new localStrategy(
         {
             passReqToCallback: true, 
             usernameField: 'email'        
         },
-        async (req, res, username, isValidPassword, done) => {
-            const { first_name, last_name, email, age } = req.body
+        async (req, username, password, done) => {
+            const { first_name, last_name, email, cart, age, role } = req.body
 
             try {
                 // Verificando que el email no este ya registrado en la base de datos
@@ -37,16 +37,18 @@ const initializePassport = () => {
                     last_name,
                     email,
                     age,
-                    password: createHash(password)
+                    password: createHash(password),
+                    cart: cart || [],
+                    role: role || 'user'
                 }
 
                 const result = await userModel.create(newUser)
                 return done(null, result)
             } catch (error) {
-                done("Error al registrar un usuario " + error)
+                return done("Error al registrar un usuario " + error)
             }
         }
-    )
+    ))
 
     // ========================================
     //               LOGIN
@@ -65,6 +67,27 @@ const initializePassport = () => {
                 return done(error)
             }
         }
+    ))
+
+    // ========================================
+    //               CURRENT
+    // ========================================
+    
+    passport.use('current', new jwtStrategy(
+        {
+            jwtFromRequest: extractJWT.fromExtractors([cookieExtractor]),
+            secretOrKey: PRIVATE_KEY
+        },
+        async (jwt_payload, done) => {
+        try {
+            if (!jwt_payload.user) {
+                return done(null, false, { message: 'No se encontró usuario en el token' })
+            }
+            return done(null, jwt_payload.user)
+        } catch (error) {
+            return done(error)
+        }
+    }
     ))
 
     passport.serializeUser((user, done) => {
@@ -91,7 +114,7 @@ const cookieExtractor = req => {
     if(req && req.cookies){
         console.log('Cookies ' + req.cookies);
 
-        token = req.cookies('jwtCookieToken')
+        token = req.cookies['jwtCookieToken']
         
         console.log('Token obtenido ' + token);        
     }

@@ -11,10 +11,20 @@ router.get('/register', (req, res) => {
     res.render('register')
 })
 
-router.get('/current',
+router.get('/',
     (req, res) => {
-        passportCall('jwt'),
+        passportCall('current'),
         authorization('user'),
+        res.render('profile', {
+            user: req.user
+        })
+    }
+)
+
+router.get('/',
+    (req, res) => {
+        passportCall('current'),
+        authorization('admin'),
         res.render('profile', {
             user: req.user
         })
