@@ -48,10 +48,11 @@ router.post('/login', async (req, res) =>{
         /* Una vez que se hicieron las validaciones necesarias manejando los errores.
         Definimos en una variable que elementos quiero dentro del token y lo guardamos en la cookie */
         const tokenUser = {
+            _id: user._id,
             name: `${user.first_name} ${user.last_name}`,
             email: user.email,
             age: user.age,
-            carts: user.cart,
+            cart: user.cart,
             role: user.role
         }
 

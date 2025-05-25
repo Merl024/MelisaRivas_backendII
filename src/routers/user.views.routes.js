@@ -13,14 +13,35 @@ router.get('/register', (req, res) => {
     res.render('register')
 })
 
-// Ruta para usuarios normales: solo ven sus datos
+// Ruta para usuarios normales: solo ven sus datos y productos de su(s) carrito(s)
 router.get('/',
     passportCall('current'),
     authorization('user'),
-    (req, res) => {
+    async (req, res) => {
+        // Poblar los carritos y productos del usuario actual
+        const user = await userModel.findById(req.user._id).populate({
+            path: 'cart',
+            populate: {
+                path: 'products.product',
+                model: 'productos'
+            }
+        }).lean();
+
+        // Extraer todos los productos de todos los carritos del usuario
+        let allProducts = [];
+        if (user.cart && user.cart.length > 0) {
+            user.cart.forEach(cart => {
+                if (cart.products) {
+                    allProducts = allProducts.concat(cart.products);
+                }
+            });
+        }
+
         res.render('profile', {
-            user: req.user
-        })
+            user,
+            allProducts,
+            isAdmin: false
+        });
     }
 )
 
