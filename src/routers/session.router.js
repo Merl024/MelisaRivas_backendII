@@ -5,7 +5,7 @@ import passport from 'passport'
 import { userModel } from '../models/user.model.js'
 
 // Utils
-import { generateToken, isValidPassword } from '../utils.js'
+import { generateToken, isValidPassword, createHash } from '../utils.js'
 
 
 
@@ -48,6 +48,7 @@ router.post('/login', async (req, res) =>{
         /* Una vez que se hicieron las validaciones necesarias manejando los errores.
         Definimos en una variable que elementos quiero dentro del token y lo guardamos en la cookie */
         const tokenUser = {
+            _id: user._id,
             name: `${user.first_name} ${user.last_name}`,
             email: user.email,
             age: user.age,
@@ -106,6 +107,82 @@ router.get('/current',
         }
     }
 )
+
+// OTROS ENDPOINTS DEL CRUD
+
+// UPDATE
+router.put('/:uid', 
+    passport.authenticate('current', { session: false }),
+    async (req, res) => {
+        try {
+            const { uid } = req.params;
+            
+            if (req.user._id !== uid) {
+                return res.status(403).send({ 
+                    status: 'error', 
+                    message: 'No tienes permiso para modificar este usuario' 
+                });
+            }
+
+            const { password, role, ...updatableFields } = req.body;
+            
+            if (req.user.role === 'admin' && role) {
+                updatableFields.role = role;
+            }
+            
+            // Si se proporciona una nueva contraseña, hashearla
+            if (password) {
+                updatableFields.password = createHash(password);
+            }
+
+            const updatedUser = await userModel.findByIdAndUpdate(
+                uid, 
+                updatableFields, 
+                { new: true }
+            );
+
+            if (!updatedUser) {
+                return res.status(404).send({ 
+                    status: 'error', 
+                    message: 'Usuario no encontrado' 
+                });
+            }
+
+            res.send({ 
+                status: 'success', 
+                message: 'Usuario actualizado correctamente',
+                user: {
+                    name: `${updatedUser.first_name} ${updatedUser.last_name}`,
+                    email: updatedUser.email,
+                    age: updatedUser.age,
+                    cart: updatedUser.cart,
+                    role: updatedUser.role
+                }
+            });
+        } catch (error) {
+            console.error('Error al actualizar usuario:', error);
+            res.status(500).send({ 
+                status: 'error', 
+                message: 'No se pudo actualizar el usuario',
+                details: error.message 
+            });
+        }
+    }
+);
+
+// DELETE 
+router.delete('/:uid', async(req, res) => {
+    try {
+        const deleteUser = await userModel.findByIdAndDelete(req.params.uid)
+        if(!deleteUser){
+            return res.status(404).send({ error: "Usuario no encontrado" })
+        }
+
+        res.send({ msg: "Usuario eliminado con exito" })
+    } catch (error) {
+        res.status(500).send({ error: "Error al eliminar al usuario" })
+    }
+})
 
 /* ENDOPOINTS EN CASO QUE FALLE EL LOGIN, REGISTER O CURRENT*/
 
