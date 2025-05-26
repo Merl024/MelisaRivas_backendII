@@ -84,7 +84,7 @@ src/
 3. Configura tu base de datos MongoDB en el archivo `app.js` o usando variables de entorno.
 4. Inicia el servidor:
     ```
-    npm run dev
+    node src/app.js
     ```
 5. Accede a la app en [http://localhost:8080](http://localhost:8080)
 
