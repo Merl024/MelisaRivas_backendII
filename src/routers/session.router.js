@@ -83,12 +83,10 @@ router.get('/current',
     passport.authenticate('current', { session: false, failureRedirect: '/api/sessions/fail-auth' }),
     async (req, res) => {
         try {
-            // El usuario ya está disponible en req.user gracias al middleware de autenticación
             if (!req.user) {
                 return res.status(401).send({ status: "error", message: "Usuario no autenticado" })
             }
 
-            // Devolvemos datos del usuario (sin información sensible)
             res.send({
                 status: "success",
                 payload: {
@@ -124,6 +122,7 @@ router.put('/:uid',
                 });
             }
 
+            // Agarramos solo los campos que se quieran editar
             const { password, role, ...updatableFields } = req.body;
             
             if (req.user.role === 'admin' && role) {

@@ -76,9 +76,8 @@ connecMongoDB()
 const socketServer = new Server(httpServer)
 
 socketServer.on('connection', async (socket) => {
-    console.log('Nuevo cliente conectado');
-
-    // Enviar productos al cliente cuando se conecta
+    console.log("Usuario conectado");
+    
     const products = await productModel.find().lean(); 
     socket.emit('products', products);
     
